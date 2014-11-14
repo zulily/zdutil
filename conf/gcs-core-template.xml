@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <property>
+    <name>fs.gs.impl</name>
+    <value>com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem</value>
+    <description>The FileSystem for gs: (GCS) uris.</description>
+  </property>
+  <property>
+    <name>fs.gs.project.id</name>
+    <value><envVar name="PROJECT"/></value>
+    <description>
+      Google Cloud Project ID with access to configured GCS buckets.
+    </description>
+  </property>
+  <property>
+    <name>fs.gs.system.bucket</name>
+    <value><envVar name="CONFIGBUCKET"/></value>
+    <description>
+      GCS bucket to use as a default bucket if fs.default.name is not a gs: uri.
+    </description>
+  </property>
+  <property>
+    <name>fs.gs.working.dir</name>
+    <value>/</value>
+    <description>
+      The directory relative gs: uris resolve in inside of the default bucket.
+    </description>
+  </property>
+</configuration>

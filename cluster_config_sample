@@ -1,0 +1,69 @@
+## custom settings - you will want to change these
+
+# common prefix of your cluster instance names
+PREFIX=my-hadoop-cluster
+
+# the GCE project name
+PROJECT=your-project-name
+
+# GCS bucket to use for provisioning. Make sure this bucket is NOT public
+CONFIGBUCKET=hadoop-provisioning-bucket
+
+# the private RSA key you use to connect to GCE instances, usually in <your_home_directory>/.ssh/google_compute_engine
+USER_GCE_SSH_KEY=FILL_ME_IN
+
+## standard settings - changing these is optional
+
+# url of bdconfig tarball
+BDCONFIG=https://storage.googleapis.com/hadoop-tools/bdconfig/bdconfig-0.28.1.tar.gz
+
+# url of hadoop 1.x tarball
+HADOOP_TARBALL_URI=http://www.apache.org/dist/hadoop/core/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+
+# the number of datanodes to provision
+NUM_WORKERS=32
+
+# the GCE zone to place the cluster in
+GCE_ZONE=us-central1-b
+
+# the GCE network the cluster will use
+GCE_NETWORK=default
+
+# the default filesystem (gs or hdfs)
+DEFAULT_FS=hdfs
+
+# GCE machine type
+GCE_MACHINE_TYPE=n1-standard-4
+
+# GCE scopes for the instances
+GCE_SERVICE_ACCOUNT_SCOPES=storage-full,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/datastore
+
+# the GCE image that all instances in the cluster will use (only Debian based images are supported at this time)
+GCE_IMAGE=debian-7-wheezy-v20141021
+
+# whether or not to attach persistent disks to each instance in the cluster
+USE_ATTACHED_PDS=true
+
+# whether or not to create any persistent disks at setup time
+CREATE_ATTACHED_PDS_ON_DEPLOY=true
+
+# whether or not to delete persistent disks at teardown time
+DELETE_ATTACHED_PDS_ON_DELETE=true
+
+# size of the datanode persistent disks
+WORKER_ATTACHED_PDS_SIZE_GB=100
+
+# size of the namenode persistent disk
+NAMENODE_ATTACHED_PD_SIZE_GB=200
+
+# comma delimited list of tags for the namenode instance
+NAMENODE_TAGS=hadoop-namenode,master
+
+# comma delimited list of tags for each datanode instance
+DATANODE_TAGS=hadoop-datanode,worker
+
+# the IP type of each datanode instance, should be one of none, external, or ephemeral
+DATANODE_EXTERNAL_IP=none
+
+# if true, the Oracle's JDK will be installed, if false, OpenJDK will be installed
+INSTALL_ORACLE_JDK=false
