@@ -5,6 +5,11 @@ Tool for provisioning GCE hadoop clusters.
 
 Getting started
 -------------------------
+* Install gevent
+```bash
+sudo pip install gevent
+```
+
 * Follow the instructions to install and configure gsutil at: https://cloud.google.com/storage/docs/gsutil_install
 
 * Follow the instructions to install and configure gcutil at: https://cloud.google.com/compute/docs/gcutil
