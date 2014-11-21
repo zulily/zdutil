@@ -47,7 +47,6 @@ echo '  UserKnownHostsFile /dev/null' >> /home/hadoop/.ssh/config
 echo '  CheckHostIP no' >> /home/hadoop/.ssh/config
 echo '  StrictHostKeyChecking no' >> /home/hadoop/.ssh/config
 
-gcloud components update -q
 gsutil cp ${LOCAL_PUBLIC_KEY} ${REMOTE_PUBLIC_KEY}
 
 chown -R hadoop:hadoop ~hadoop/.ssh/

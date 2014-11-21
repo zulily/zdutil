@@ -2,7 +2,7 @@
 
 set -e
 
-gcloud components update -q
+bash setup_gcloud.sh
 
 source setup_env.sh
 
