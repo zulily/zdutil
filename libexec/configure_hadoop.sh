@@ -104,3 +104,12 @@ if [[ -f yarn-template.xml ]]; then
         --clobber
   fi
 fi
+
+# update some ulimits for the hadoop user
+echo 'hadoop soft nproc 10000' >> /etc/security/limits.conf
+echo 'hadoop hard nproc 10000' >> /etc/security/limits.conf
+echo 'hadoop soft nofile 100000' >> /etc/security/limits.conf
+echo 'hadoop hard nofile 500000' >> /etc/security/limits.conf
+
+# make the above ulimits actually take effect
+echo 'session required pam_limits.so' >> /etc/pam.d/common-session
