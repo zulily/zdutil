@@ -14,6 +14,7 @@ bash setup_hadoop_user.sh
 bash mount_disks.sh
 bash install_hadoop.sh
 bash configure_hadoop.sh
+bash configure_hadoop_restart_namenode.sh
 bash configure_hdfs.sh
 bash set_default_hadoop_fs.sh
 bash configure_gcs_connector_namenode.sh

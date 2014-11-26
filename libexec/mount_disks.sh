@@ -60,6 +60,7 @@ done
 
 echo "/dev/sdb /mnt/pd1 ext4 rw,relatime,data=ordered 0 0" >> /etc/fstab
 
+
 # If disks are mounted use the first one to hold target of symlink /hadoop
 if MOUNTED_DISKS=($(find /mnt/* -maxdepth 0)); then
   MOUNTED_HADOOP_DIR=${MOUNTED_DISKS[0]}/hadoop
