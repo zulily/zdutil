@@ -1,6 +1,11 @@
-#example usage:
-# python zdutil.py -c cluster_config -a setup
+# example usage:
+#
+# python zdutil.py -c cluster_config -a setup -s <path_to_script1>,<path_to_script2>
 # python zdutil.py -c cluster_config -a teardown
+
+# print list of options:
+#
+# python zdutil.py -h
 
 from gevent.subprocess import Popen
 from gevent import monkey
@@ -60,6 +65,12 @@ def verify(action, config):
     answer = sys.stdin.readline()
     if not answer or not answer.startswith('y'):
         exit(0)
+
+def validate_script_files(script_file_paths):
+    for script_file_path in script_file_paths:
+        if not os.path.isfile(script_file_path):
+            print 'Cannot find script file: {}'.format(script_file_path)
+            exit(1)
 
 def block_and_check_process_output(process_args, fail_on_error=True, retry_count=3):
     process = Popen(process_args)
@@ -287,16 +298,53 @@ def run_remote_setup(config):
     process_args = zdgcutil.remote_command(config, instance_name, 'sudo bash setup_namenode_all.sh > provision.log 2>&1')
     block_and_check_process_output(process_args)
 
-def setup(config):
-    verify(action, config)
+def run_extra_scripts(script_file_paths):
+    if script_file_paths:
+        instance_name = '{}-nn'.format(config['PREFIX'])
+
+        for script_file_path in script_file_paths:
+            script_file_name = os.path.basename(script_file_path)
+
+            #upload the script to GCS
+            gcs_path = 'cluster_setup/extras/{}'.format(script_file_name)
+            process_args = zdgsutil.copy_file_to_gcs(script_file_path, config['CONFIGBUCKET'], gcs_path)
+            block_and_check_process_output(process_args)
+
+            #copy the script from GCS to the namenode
+            copy_script_cmd = 'gsutil cp gs://{}/{} .'.format(config['CONFIGBUCKET'], gcs_path)
+            process_args = zdgcutil.remote_command(config, instance_name, copy_script_cmd)
+            block_and_check_process_output(process_args)
+
+            #make sure the script is executable
+            command = 'chmod +x {}'.format(script_file_name)
+            process_args = zdgcutil.remote_command(config, instance_name, command)
+            block_and_check_process_output(process_args)
+
+            #run the script on the namenode
+            command = 'sudo bash {} > {}.log 2>&1'.format(script_file_name, script_file_name)
+            process_args = zdgcutil.remote_command(config, instance_name, command)
+            block_and_check_process_output(process_args)
+
+def setup(config, script_file_paths, prompt=True):
+    if prompt:
+        verify(action, config)
+    validate_script_files(script_file_paths)
     create_disks(config)
     create_instances(config)
     tag_instances(config)
     block_until_master_sshable(config)
     run_remote_setup(config)
+    namenode = '{}-nn'.format(config['PREFIX'])
+    print 'Successfully created cluster.'
+    print 'Namenode: {}'.format(namenode)
+    for i in range(int(config['NUM_WORKERS'])):
+        print 'Datanode {}: {}'.format(i, '{}-dn-{}'.format(config['PREFIX'], i))
 
-def teardown(config):
-    verify(action, config)
+    run_extra_scripts(script_file_paths)
+
+def teardown(config, prompt=True):
+    if prompt:
+        verify(action, config)
     delete_instances(config)
     delete_disks(config)
 
@@ -313,6 +361,17 @@ parser.add_argument('-a',
                     required=True,
                     help='The action to take, setup or teardown')
 
+parser.add_argument('-f',
+                    action='store_true',
+                    default=False,
+                    dest='force',
+                    help='Disable user prompts')
+
+parser.add_argument('-s',
+                    dest='scripts',
+                    required=False,
+                    help='Comma delimited list of scripts to run after cluster is provisioned')
+
 args = parser.parse_args()
 
 action = args.action
@@ -322,7 +381,12 @@ validate_config_file(config_file_path)
 config = parse_config(config_file_path)
 validate_config(config)
 
+script_file_paths = []
+if args.scripts:
+    script_file_paths = args.scripts.strip().split(',')
+
 if action == 'setup':
-    setup(config)
+    setup(config, script_file_paths, prompt=not args.force)
+
 elif action == 'teardown':
-    teardown(config)
+    teardown(config, prompt=not args.force)

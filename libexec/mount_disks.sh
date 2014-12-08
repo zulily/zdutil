@@ -17,8 +17,6 @@
 
 echo 'Mounting disks'
 
-set -e
-
 # Get a list of disks from the metadata server.
 BASE_DISK_URL='http://metadata/computeMetadata/v1beta1/instance/disks/'
 DISK_PATHS=$(curl ${BASE_DISK_URL})
