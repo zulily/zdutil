@@ -65,5 +65,8 @@ DATANODE_TAGS=hadoop-datanode,worker
 # the IP type of each datanode instance, should be one of none, external, or ephemeral
 DATANODE_EXTERNAL_IP=none
 
-# if true, the Oracle's JDK will be installed, if false, OpenJDK will be installed
+# install Java on the namenode and datanode instances, this should be true for Debian images provided by Google where Java is NOT bundled in the image
+INSTALL_JAVA=true
+
+# if true, the Oracle's JDK will be installed, if false, OpenJDK will be installed. only applicable if INSTALL_JAVA is true
 INSTALL_ORACLE_JDK=false

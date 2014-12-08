@@ -54,7 +54,7 @@ def validate_config(config):
                 'GCE_IMAGE', 'USE_ATTACHED_PDS', 'CREATE_ATTACHED_PDS_ON_DEPLOY', 'DELETE_ATTACHED_PDS_ON_DELETE',
                 'WORKER_ATTACHED_PDS_SIZE_GB', 'NAMENODE_ATTACHED_PD_SIZE_GB', 'GCE_SERVICE_ACCOUNT_SCOPES',
                 'GCE_NETWORK', 'USER_GCE_SSH_KEY', 'DATANODE_EXTERNAL_IP', 'BDCONFIG', 'HADOOP_TARBALL_URI',
-                'PROJECT', 'INSTALL_ORACLE_JDK']
+                'PROJECT', 'INSTALL_ORACLE_JDK', 'INSTALL_JAVA']
     map(lambda name: check_required(name), required)
 
 def verify(action, config):
@@ -228,7 +228,8 @@ def upload_env_script_to_gcs(config):
                                      BDCONFIG=config['BDCONFIG'],
                                      HADOOP_TARBALL_URI=config['HADOOP_TARBALL_URI'],
                                      PROJECT=config['PROJECT'],
-                                     INSTALL_ORACLE_JDK=config['INSTALL_ORACLE_JDK'])
+                                     INSTALL_ORACLE_JDK=config['INSTALL_ORACLE_JDK'],
+                                     INSTALL_JAVA=config['INSTALL_JAVA'])
     env_script_filename = 'setup_env.sh'
     env_script_filepath = '{}/{}'.format(os.path.dirname(os.path.realpath(__file__)), env_script_filename)
     gcs_path = 'cluster_setup/{}/{}'.format(config['PREFIX'], env_script_filename)
