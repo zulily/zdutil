@@ -5,15 +5,27 @@ import argparse
 from subprocess import Popen
 import os
 
-def block_and_check_process_output(process_args, fail_on_error=True, retry_count=3):
+def block_and_check_process_output(process_args,
+                                   fail_on_error=True,
+                                   retry_count=3,
+                                   pre_retry_fn=None,
+                                   on_fail_fn=None):
     process = Popen(process_args)
     process.wait()
     if process.returncode != 0:
         if retry_count > 0:
             print '{} failed. Retrying...'.format(' '.join(process_args))
-            block_and_check_process_output(process_args, fail_on_error=fail_on_error, retry_count=retry_count - 1)
+            if pre_retry_fn:
+                pre_retry_fn()
+            block_and_check_process_output(process_args,
+                                           fail_on_error=fail_on_error,
+                                           retry_count=retry_count - 1,
+                                           pre_retry_fn=pre_retry_fn,
+                                           on_fail_fn=on_fail_fn)
         else:
             print process.stderr
+            if on_fail_fn:
+                on_fail_fn()
             if fail_on_error:
                 exit(1)
 
@@ -48,8 +60,13 @@ def provision_cluster(args):
                       'setup',
                       '-f',
                       '-s', args.scripts]
+    def teardown():
+        teardown_cluster(args)
 
-    block_and_check_process_output(provision_args, retry_count=3)
+    block_and_check_process_output(provision_args,
+                                   retry_count=5,
+                                   pre_retry_fn=teardown,
+                                   on_fail_fn=teardown)
 
 def teardown_cluster(args):
     provision_args = ['python',
@@ -59,7 +76,7 @@ def teardown_cluster(args):
                       '-a'
                       'teardown',
                       '-f']
-    block_and_check_process_output(provision_args, retry_count=3)
+    block_and_check_process_output(provision_args)
 
 def validate_zdutil(args):
     if not os.path.isfile(args.zdutil):
