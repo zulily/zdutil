@@ -32,3 +32,5 @@ if [[ "$HADOOP_VERSION" = "1.x" ]]; then
 else
  bash start_hadoop2.sh
 fi
+
+bash cleanup_namenode.sh

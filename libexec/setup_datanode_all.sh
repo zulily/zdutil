@@ -40,3 +40,5 @@ bash setup_datanode_ssh.sh
 if [ -n "$SETUP_SQUID" ]; then
   bash configure_hadoop_proxy.sh
 fi
+
+bash cleanup_datanode.sh
