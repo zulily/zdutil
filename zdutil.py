@@ -21,7 +21,7 @@ import zdgsutil
 import setup_env
 
 #control how many parallel calls to make when doing datanode operations like add instance, add disk, etc
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 
 def validate_action(action):
     allowed_actions = {'setup', 'teardown'}
@@ -50,11 +50,12 @@ def validate_config(config):
         if not name in config:
             print '{} is required in config file'.format(name)
             exit(1)
-    required = ['PREFIX', 'NUM_WORKERS', 'CONFIGBUCKET', 'GCE_ZONE', 'PROJECT', 'DEFAULT_FS', 'GCE_MACHINE_TYPE',
+    required = ['PREFIX', 'NUM_WORKERS', 'CONFIGBUCKET', 'GCE_ZONE', 'PROJECT', 'DEFAULT_FS',
+                'NAMENODE_GCE_MACHINE_TYPE', 'DATANODE_GCE_MACHINE_TYPE',
                 'GCE_IMAGE', 'USE_ATTACHED_PDS', 'CREATE_ATTACHED_PDS_ON_DEPLOY', 'DELETE_ATTACHED_PDS_ON_DELETE',
                 'WORKER_ATTACHED_PDS_SIZE_GB', 'NAMENODE_ATTACHED_PD_SIZE_GB', 'GCE_SERVICE_ACCOUNT_SCOPES',
-                'GCE_NETWORK', 'USER_GCE_SSH_KEY', 'DATANODE_EXTERNAL_IP', 'BDCONFIG', 'HADOOP_TARBALL_URI',
-                'PROJECT', 'INSTALL_ORACLE_JDK', 'INSTALL_JAVA']
+                'GCE_NETWORK', 'USER_GCE_SSH_KEY', 'DATANODE_EXTERNAL_IP', 'BDCONFIG',
+                'PROJECT', 'INSTALL_ORACLE_JDK', 'INSTALL_JAVA', 'HADOOP_VERSION']
     map(lambda name: check_required(name), required)
 
 def verify(action, config):
@@ -72,7 +73,7 @@ def validate_script_files(script_file_paths):
             print 'Cannot find script file: {}'.format(script_file_path)
             exit(1)
 
-def block_and_check_process_output(process_args, fail_on_error=True, retry_count=3):
+def block_and_check_process_output(process_args, fail_on_error=True, retry_count=0):
     process = Popen(process_args)
     process.wait()
     if process.returncode != 0:
@@ -133,7 +134,7 @@ def create_worker_instances(config):
         if config['USE_ATTACHED_PDS'] == 'true':
             optional_disk_arg = '--disk={}-dn-{}-pd,mode=rw'.format(config['PREFIX'], i)
         instance_name = '{}-dn-{}'.format(config['PREFIX'], i)
-        return zdgcutil.add_instance(config, instance_name, optional_disk_arg,
+        return zdgcutil.add_instance(config, instance_name, optional_disk_arg, config['DATANODE_GCE_MACHINE_TYPE'],
                                      external_ip_address=config['DATANODE_EXTERNAL_IP'])
 
     batch_process(config, create_worker_instance)
@@ -143,7 +144,7 @@ def create_master_instance(config):
     if config['USE_ATTACHED_PDS'] == 'true':
         optional_disk_arg = '--disk={}-nn-pd,mode=rw'.format(config['PREFIX'])
     instance_name = '{}-nn'.format(config['PREFIX'])
-    process_args = zdgcutil.add_instance(config, instance_name, optional_disk_arg)
+    process_args = zdgcutil.add_instance(config, instance_name, optional_disk_arg, config['NAMENODE_GCE_MACHINE_TYPE'])
     block_and_check_process_output(process_args)
 
 def create_instances(config):
@@ -226,10 +227,10 @@ def upload_env_script_to_gcs(config):
                                      DEFAULT_FS=config['DEFAULT_FS'],
                                      SETUP_SQUID=setup_squid,
                                      BDCONFIG=config['BDCONFIG'],
-                                     HADOOP_TARBALL_URI=config['HADOOP_TARBALL_URI'],
                                      PROJECT=config['PROJECT'],
                                      INSTALL_ORACLE_JDK=config['INSTALL_ORACLE_JDK'],
-                                     INSTALL_JAVA=config['INSTALL_JAVA'])
+                                     INSTALL_JAVA=config['INSTALL_JAVA'],
+                                     HADOOP_VERSION=config['HADOOP_VERSION'])
     env_script_filename = 'setup_env.sh'
     env_script_filepath = '{}/{}'.format(os.path.dirname(os.path.realpath(__file__)), env_script_filename)
     gcs_path = 'cluster_setup/{}/{}'.format(config['PREFIX'], env_script_filename)
@@ -264,7 +265,8 @@ def run_remote_setup(config):
 
     #upload the config files to GCS
     config_files_gcs_path = 'cluster_setup'
-    config_files_filepath = '{}/{}'.format(os.path.dirname(os.path.realpath(__file__)), 'conf/*.xml')
+    conf_path = 'hadoop1_conf' if config['HADOOP_VERSION'] == '1.x' else 'hadoop2_conf'
+    config_files_filepath = '{}/{}'.format(os.path.dirname(os.path.realpath(__file__)), '{}/*.xml'.format(conf_path))
     process_args = zdgsutil.copy_file_to_gcs(config_files_filepath, config['CONFIGBUCKET'], config_files_gcs_path)
     block_and_check_process_output(process_args)
 

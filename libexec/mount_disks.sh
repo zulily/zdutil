@@ -15,11 +15,12 @@
 # Mounts any attached persistent and ephemeral disks non-boot disks
 #!/bin/bash
 
-echo 'Mounting disks'
+set -e
 
 # Get a list of disks from the metadata server.
-BASE_DISK_URL='http://metadata/computeMetadata/v1beta1/instance/disks/'
+BASE_DISK_URL='http://metadata.google.internal/computeMetadata/v1beta1/instance/disks/'
 DISK_PATHS=$(curl ${BASE_DISK_URL})
+MOUNTED_DISKS=()
 
 for DISK_PATH in ${DISK_PATHS}; do
   # Use the metadata server to determine the official index/name of each disk.
@@ -49,20 +50,27 @@ for DISK_PATH in ${DISK_PATHS}; do
   DATAMOUNT="/mnt/${DISK_PREFIX}${DISK_INDEX}"
   if [ ! -e ${DATAMOUNT} ]
   then
-    mkdir ${DATAMOUNT}
+    mkdir -p ${DATAMOUNT}
   fi
+  MOUNTED_DISKS+=(${DATAMOUNT})
   echo "Mounting '${DISK_ID}' under mount point '${DATAMOUNT}'..."
   MOUNT_TOOL=/usr/share/google/safe_format_and_mount
   ${MOUNT_TOOL} -m 'mkfs.ext4 -F' ${DISK_ID} ${DATAMOUNT}
+
+  # Idempotently update /etc/fstab
+  if cut -d '#' -f 1 /etc/fstab | grep -qvw ${DATAMOUNT}; then
+    DISK_UUID=$(blkid ${DISK_ID} -s UUID -o value)
+    MOUNT_ENTRY=($(grep -w ${DATAMOUNT} /proc/mounts))
+    echo "UUID=${DISK_UUID} ${MOUNT_ENTRY[@]:1:3} 0 2 # added by bdutil" \
+    >> /etc/fstab
+  fi
 done
 
-echo "/dev/sdb /mnt/pd1 ext4 rw,relatime,data=ordered 0 0" >> /etc/fstab
-
-
 # If disks are mounted use the first one to hold target of symlink /hadoop
-if MOUNTED_DISKS=($(find /mnt/* -maxdepth 0)); then
+if (( ${#MOUNTED_DISKS[@]} )); then
   MOUNTED_HADOOP_DIR=${MOUNTED_DISKS[0]}/hadoop
   mkdir -p ${MOUNTED_HADOOP_DIR}
-  chown hadoop: ${MOUNTED_HADOOP_DIR}
-  ln -s ${MOUNTED_HADOOP_DIR} /hadoop
+  if [[ ! -d /hadoop ]]; then
+    ln -s ${MOUNTED_HADOOP_DIR} /hadoop
+  fi
 fi

@@ -37,7 +37,7 @@ do
   scp -o UserKnownHostsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no -i temp *.xml ${SUDO_USER}@${NODE}:~/
   if [ -n "$SETUP_SQUID" ]; then
     echo "Configuring ${NODE} to use squid proxy"
-    scp -o UserKnownHostsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no -i temp bigdata-interop-1.3.1-z/gcs/target/gcs-connector-1.3.1-SNAPSHOT-hadoop1-shaded.jar ${SUDO_USER}@${NODE}:~/
+    scp -o UserKnownHostsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no -i temp bigdata-interop-1.3.1-z/gcs/target/gcs-connector-1.3.1-z.jar ${SUDO_USER}@${NODE}:~/
     ssh -o UserKnownHostsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no -i temp -A -p 22 ${SUDO_USER}@${NODE} 'sudo bash setup_squid_datanode.sh > proxy.log 2>&1; exit 0'
   fi
   echo "Provisioning ${NODE}"

@@ -17,9 +17,6 @@ USER_GCE_SSH_KEY=FILL_ME_IN
 # url of bdconfig tarball
 BDCONFIG=https://storage.googleapis.com/hadoop-tools/bdconfig/bdconfig-0.28.1.tar.gz
 
-# url of hadoop 1.x tarball
-HADOOP_TARBALL_URI=http://www.apache.org/dist/hadoop/core/hadoop-1.2.1/hadoop-1.2.1.tar.gz
-
 # the number of datanodes to provision
 NUM_WORKERS=32
 
@@ -32,8 +29,11 @@ GCE_NETWORK=default
 # the default filesystem (gs or hdfs)
 DEFAULT_FS=hdfs
 
-# GCE machine type
-GCE_MACHINE_TYPE=n1-standard-4
+# GCE machine type for namenode instance
+NAMENODE_GCE_MACHINE_TYPE=n1-standard-4
+
+# GCE machine type for datanode instances
+DATANODE_GCE_MACHINE_TYPE=n1-standard-4
 
 # GCE scopes for the instances
 GCE_SERVICE_ACCOUNT_SCOPES=storage-full,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/datastore
@@ -70,3 +70,6 @@ INSTALL_JAVA=true
 
 # if true, the Oracle's JDK will be installed, if false, OpenJDK will be installed. only applicable if INSTALL_JAVA is true
 INSTALL_ORACLE_JDK=false
+
+# the version of hadoop to install and configure, either 1.x or 2.x
+HADOOP_VERSION=1.x

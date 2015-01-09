@@ -8,4 +8,4 @@ set -e
 rm -f ${HADOOP_LIB_DIR}/gcs-connector*
 
 #copy the jar to hadoop libs
-cp gcs-connector-1.3.1-SNAPSHOT-hadoop1-shaded.jar ${HADOOP_LIB_DIR}/
+cp gcs-connector-1.3.1-z.jar ${HADOOP_LIB_DIR}/

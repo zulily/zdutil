@@ -7,13 +7,13 @@ def add_disk(config, disk_name, size_in_gb):
             '--size_gb={}'.format(size_in_gb),
             disk_name]
 
-def add_instance(config, instance_name, optional_disk_arg, external_ip_address='ephemeral'):
+def add_instance(config, instance_name, optional_disk_arg, machine_type, external_ip_address='ephemeral'):
     print 'Creating instance: {}'.format(instance_name)
     args = ['gcutil',
             'addinstance',
             '--project={}'.format(config['PROJECT']),
             '--zone={}'.format(config['GCE_ZONE']),
-            '--machine_type={}'.format(config['GCE_MACHINE_TYPE']),
+            '--machine_type={}'.format(machine_type),
             '--service_account=default',
             '--image={}'.format(config['GCE_IMAGE']),
             '--network={}'.format(config['GCE_NETWORK']),

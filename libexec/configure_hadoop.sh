@@ -74,6 +74,14 @@ export HADOOP_LOG_DIR=/hadoop/logs
 HADOOP_JOBTRACKER_OPTS="-Xmx${JOBTRACKER_MEM_MB}m \${HADOOP_JOBTRACKER_OPTS}"
 EOF
 
+YARN_ENV_FILE=${YARN_CONF_DIR:-$HADOOP_CONF_DIR}/yarn-env.sh
+if [[ -f ${YARN_ENV_FILE} ]]; then
+  cat << EOF >> ${YARN_ENV_FILE}
+# Increase maximum JobTracker Heap
+YARN_RESOURCEMANAGER_OPTS="-Xmx${RESOURCEMANAGER_MEM_MB}m \${YARN_RESOURCEMANAGER_OPTS}"
+EOF
+fi
+
 bdconfig merge_configurations \
     --configuration_file ${HADOOP_CONF_DIR}/core-site.xml \
     --source_configuration_file core-template.xml \

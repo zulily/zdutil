@@ -27,4 +27,8 @@ fi
 
 bash setup_datanodes_remote.sh
 
-bash start_hadoop.sh
+if [[ "$HADOOP_VERSION" = "1.x" ]]; then
+ bash start_hadoop1.sh
+else
+ bash start_hadoop2.sh
+fi

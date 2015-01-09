@@ -52,6 +52,14 @@ HADOOP_NAMENODE_OPTS="-Xmx${NAMENODE_MEM_MB}m \${HADOOP_NAMENODE_OPTS}"
 HADOOP_SECONDARYNAMENODE_OPTS="-Xmx${SECONDARYNAMENODE_MEM_MB}m \${HADOOP_SECONDARYNAMENODE_OPTS}"
 EOF
 
+# Increase maximum number of files for HDFS
+  MAX_FILES=16384
+  ulimit -n ${MAX_FILES}
+  cat << EOF > /etc/security/limits.d/hadoop.conf
+${HDFS_ADMIN} hard nofile ${MAX_FILES}
+${HDFS_ADMIN} soft nofile ${MAX_FILES}
+EOF
+
   export HDFS_DATA_DIRS="${HDFS_DATA_DIRS// /,}"
 
   bdconfig merge_configurations \
